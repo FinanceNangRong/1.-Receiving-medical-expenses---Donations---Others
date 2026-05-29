@@ -168,6 +168,22 @@
             return arrData;
         }
 
+        // เพิ่มฟังก์ชัน updateSelectOptions คืนมาเพื่อแก้ไข Error ReferenceError
+        function updateSelectOptions(id, setObj, defaultText) {
+            const select = document.getElementById(id);
+            if (!select) return;
+            const currentVal = select.value;
+            select.innerHTML = `<option value="">${defaultText}</option>`;
+            let arr = Array.from(setObj).sort();
+            arr.forEach(val => {
+                const opt = document.createElement('option');
+                opt.value = val;
+                opt.textContent = val;
+                select.appendChild(opt);
+            });
+            if(arr.includes(currentVal)) select.value = currentVal;
+        }
+
         function pad3(num) { return String(num).padStart(3, '0'); }
 
         function formatReceiptRanges(selectedNumbers) {
@@ -259,7 +275,7 @@
 
         let receiptOptionsHtml = `
             <div class="p-2 sticky top-0 bg-gray-50 border-b z-10 shadow-sm flex flex-col gap-2">
-                <input type="text" placeholder="🔍 ค้นหาเลขที่..." class="w-full border-gray-300 border rounded px-2 py-1 text-sm outline-none focus:ring-1 focus:ring-blue-500" onkeyup="filterReceipts(this)" onclick="event.stopPropagation()">
+                <input type="text" placeholder="🔍 ค้นหา (เช่น 001-005)..." class="w-full border-gray-300 border rounded px-2 py-1 text-sm outline-none focus:ring-1 focus:ring-blue-500" onkeyup="filterReceipts(this)" onclick="event.stopPropagation()">
                 <div class="flex justify-between gap-2">
                     <button type="button" onclick="selectAllReceipts(this, event)" class="w-1/2 text-xs bg-blue-500 hover:bg-blue-600 text-white py-1 rounded font-semibold transition-all">เลือกทั้งหมด</button>
                     <button type="button" onclick="clearAllReceipts(this, event)" class="w-1/2 text-xs bg-slate-300 hover:bg-slate-400 text-slate-700 py-1 rounded font-semibold transition-all">ล้าง</button>
@@ -357,11 +373,30 @@
         }
 
         function filterReceipts(input) {
-            const filter = input.value.toLowerCase();
+            const filter = input.value.trim().toLowerCase();
             const container = input.closest('.receipt-options');
+            
+            // ตรวจสอบเงื่อนไขว่าผู้ใช้พิมพ์แบบเป็นช่วงหรือไม่ (เช่น 001-005 หรือ 1-5)
+            let rangeStart = -1, rangeEnd = -1;
+            const rangeMatch = filter.match(/^(\d+)\s*-\s*(\d+)$/);
+            if (rangeMatch) {
+                rangeStart = parseInt(rangeMatch[1], 10);
+                rangeEnd = parseInt(rangeMatch[2], 10);
+            }
+
             container.querySelectorAll('.receipt-label').forEach(label => {
                 const span = label.querySelector('span');
-                label.style.display = (span && span.innerText.toLowerCase().includes(filter)) ? 'flex' : 'none';
+                if (span) {
+                    const textVal = span.innerText.toLowerCase();
+                    if (rangeStart !== -1 && rangeEnd !== -1) {
+                        // กรองแบบเป็นช่วงตัวเลข
+                        const numVal = parseInt(textVal, 10);
+                        label.style.display = (numVal >= Math.min(rangeStart, rangeEnd) && numVal <= Math.max(rangeStart, rangeEnd)) ? 'flex' : 'none';
+                    } else {
+                        // กรองแบบปกติ
+                        label.style.display = textVal.includes(filter) ? 'flex' : 'none';
+                    }
+                }
             });
         }
 
