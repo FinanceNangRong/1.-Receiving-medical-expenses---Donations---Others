@@ -369,6 +369,15 @@
         function toggleReceiptDropdown(inputEl) {
             const optionsDiv = inputEl.nextElementSibling;
             document.querySelectorAll('.receipt-options, .item-options, #p2-date-options, #p3-staff-options, #p3-point-options').forEach(el => el.classList.add('hidden'));
+            
+            // เพิ่ม: จัดการ overflow ของ table wrapper เมื่อเปิด dropdown
+            const tableWrapper = inputEl.closest('.overflow-x-auto');
+            if (tableWrapper) {
+                if (optionsDiv.classList.contains('hidden')) {
+                     tableWrapper.style.overflow = 'visible';
+                }
+            }
+            
             if (optionsDiv.classList.contains('hidden')) optionsDiv.classList.remove('hidden');
         }
 
@@ -403,6 +412,15 @@
         function toggleItemDropdown(input) {
             const optionsDiv = input.nextElementSibling;
             document.querySelectorAll('.item-options, .receipt-options, #p2-date-options, #p3-staff-options, #p3-point-options').forEach(el => el.classList.add('hidden'));
+            
+            // เพิ่ม: จัดการ overflow ของ table wrapper เมื่อเปิด dropdown
+            const tableWrapper = input.closest('.overflow-x-auto');
+            if (tableWrapper) {
+                 if (optionsDiv.classList.contains('hidden')) {
+                     tableWrapper.style.overflow = 'visible';
+                 }
+            }
+
             if (optionsDiv.classList.contains('hidden')) {
                 optionsDiv.classList.remove('hidden');
                 filterItems(input);
@@ -435,12 +453,28 @@
         }
 
         document.addEventListener('click', function(e) {
+            // เพิ่ม: คืนค่า overflow ของตารางเมื่อคลิกพื้นที่อื่น
+            let shouldResetOverflow = false;
+
             if(!e.target.closest('.receipt-dropdown-container')) {
-                document.querySelectorAll('.receipt-options').forEach(el => el.classList.add('hidden'));
+                document.querySelectorAll('.receipt-options').forEach(el => {
+                    if (!el.classList.contains('hidden')) shouldResetOverflow = true;
+                    el.classList.add('hidden');
+                });
             }
             if(!e.target.closest('.item-dropdown-container')) {
-                document.querySelectorAll('.item-options').forEach(el => el.classList.add('hidden'));
+                document.querySelectorAll('.item-options').forEach(el => {
+                    if (!el.classList.contains('hidden')) shouldResetOverflow = true;
+                    el.classList.add('hidden');
+                });
             }
+            
+            if (shouldResetOverflow) {
+                document.querySelectorAll('.overflow-x-auto').forEach(el => {
+                    el.style.overflow = ''; // คืนค่ากลับเป็นค่าเริ่มต้นตามคลาส CSS
+                });
+            }
+
             // ปิด Dropdown วันที่ในหน้า 3 ด้วย
             if(!e.target.closest('.p3-date-dropdown-container')) {
                 const el = document.getElementById('p3-date-options');
@@ -606,12 +640,8 @@
         function toggleP2DateDropdown() {
             const optionsDiv = document.getElementById('p2-date-options');
             document.querySelectorAll('.receipt-options, .item-options, #p3-date-options, #p3-staff-options, #p3-point-options').forEach(el => el.classList.add('hidden'));
-            if (optionsDiv.classList.contains('hidden')) {
-                optionsDiv.classList.remove('hidden');
-                filterP2Dates(document.getElementById('p2-date-input'));
-            } else {
-                optionsDiv.classList.add('hidden');
-            }
+            optionsDiv.classList.remove('hidden');
+            filterP2Dates(document.getElementById('p2-date-input'));
         }
 
         function filterP2Dates(input) {
@@ -1178,12 +1208,8 @@
         function toggleP3StaffDropdown() {
             const optionsDiv = document.getElementById('p3-staff-options');
             document.querySelectorAll('.receipt-options, .item-options, #p3-date-options, #p2-date-options, #p3-point-options').forEach(el => el.classList.add('hidden'));
-            if (optionsDiv.classList.contains('hidden')) {
-                optionsDiv.classList.remove('hidden');
-                filterP3Staffs(document.getElementById('p3-staff-input'));
-            } else {
-                optionsDiv.classList.add('hidden');
-            }
+            optionsDiv.classList.remove('hidden');
+            filterP3Staffs(document.getElementById('p3-staff-input'));
         }
 
         function filterP3Staffs(input) {
@@ -1217,12 +1243,8 @@
         function toggleP3PointDropdown() {
             const optionsDiv = document.getElementById('p3-point-options');
             document.querySelectorAll('.receipt-options, .item-options, #p3-date-options, #p2-date-options, #p3-staff-options').forEach(el => el.classList.add('hidden'));
-            if (optionsDiv.classList.contains('hidden')) {
-                optionsDiv.classList.remove('hidden');
-                filterP3Points(document.getElementById('p3-point-input'));
-            } else {
-                optionsDiv.classList.add('hidden');
-            }
+            optionsDiv.classList.remove('hidden');
+            filterP3Points(document.getElementById('p3-point-input'));
         }
 
         function filterP3Points(input) {
@@ -1509,7 +1531,7 @@
         <p class="text-slate-700 font-medium text-lg tracking-wide">กำลังเชื่อมต่อฐานข้อมูล...</p>
     </div>
 
-    <!-- -->
+    <!-- Navigation Bar -->
     <nav class="bg-blue-700 shadow-md sticky top-0 z-40 print-hide">
         <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
@@ -1542,8 +1564,10 @@
         </div>
     </nav>
 
-    <!-- -->
+    <!-- Main Content Container -->
     <div class="p-4 md:p-8 relative max-w-6xl mx-auto">
+        
+        <!-- Page 1: บันทึกข้อมูลนำส่งเงิน -->
         <div id="page1" class="bg-white rounded-2xl shadow-xl overflow-hidden animate-fade-in print-hide border border-slate-100">
             <div class="bg-gradient-to-r from-blue-600 to-indigo-600 p-6 text-white">
                 <h1 class="text-2xl font-bold flex items-center gap-3"><i class="fa-solid fa-file-signature"></i> บันทึกข้อมูลนำส่งเงิน ค่ารักษา บริจาค อื่นๆ</h1>
@@ -1551,6 +1575,7 @@
             </div>
             
             <form id="medicalForm" onsubmit="submitForm(event)" class="p-6 md:p-8">
+                <!-- ข้อมูลส่วนหัวฟอร์ม -->
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                     <div class="col-span-1 md:col-span-2">
                         <label class="block text-slate-700 font-semibold mb-2 text-sm">1. ชื่อผู้ทำรายการ</label>
@@ -1580,6 +1605,7 @@
                     </div>
                 </div>
 
+                <!-- ส่วนเพิ่มรายการรับเงิน -->
                 <div class="mb-4 flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-t border-slate-100 pt-8">
                     <div>
                         <h2 class="text-lg font-bold text-slate-800">5. รายการรับเงิน</h2>
@@ -1590,7 +1616,7 @@
                     </button>
                 </div>
 
-                <div class="overflow-x-auto border border-slate-200 rounded-xl mb-8 shadow-sm">
+                <div class="overflow-x-auto border border-slate-200 rounded-xl mb-8 shadow-sm pb-32"> <!-- แก้ไขตรงนี้: เพิ่ม pb-32 เพื่อกัน dropdown ทะลุแล้วโดนซ่อน -->
                     <table class="w-full text-left border-collapse min-w-[900px]">
                         <thead>
                             <tr class="bg-slate-50 border-b border-slate-200">
@@ -1651,7 +1677,7 @@
                         <!-- เลือกวันที่โฉมใหม่ (พิมพ์ค้นหาได้) -->
                         <div class="relative p2-date-dropdown-container">
                             <label class="block text-slate-600 font-medium mb-1.5 text-sm">1. เลือกวันที่ (พิมพ์เพื่อค้นหาได้)</label>
-                            <input type="text" id="p2-date-input" readonly placeholder="พิมพ์เพื่อค้นหา/เลือก..." onclick="toggleP2DateDropdown()" onkeyup="filterP2Dates(this)" autocomplete="off" class="w-full border border-slate-300 rounded-lg p-2.5 bg-white outline-none focus:ring-2 focus:ring-indigo-500 text-sm shadow-sm">
+                            <input type="text" id="p2-date-input" placeholder="พิมพ์เพื่อค้นหา/เลือก..." onclick="toggleP2DateDropdown()" onkeyup="filterP2Dates(this)" autocomplete="off" class="w-full border border-slate-300 rounded-lg p-2.5 bg-white outline-none focus:ring-2 focus:ring-indigo-500 text-sm shadow-sm">
                             <div id="p2-date-options" class="hidden absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-md shadow-xl z-50 max-h-48 overflow-y-auto">
                                 <div id="p2-date-options-list">
                                     <!-- JS will populate options -->
@@ -1761,7 +1787,7 @@
                         <!-- เลือกผู้ส่งเงิน (คอลัมน์ C และ ตำแหน่งจาก คอลัมน์ D) -->
                         <div class="relative p3-staff-dropdown-container">
                             <label class="block text-slate-600 font-semibold mb-1.5 text-sm">ผู้ส่งเงิน</label>
-                            <input type="text" id="p3-staff-input" readonly placeholder="พิมพ์เพื่อค้นหา/เลือกผู้ส่งเงิน..." onclick="toggleP3StaffDropdown()" onkeyup="filterP3Staffs(this)" autocomplete="off" class="w-full border border-slate-300 rounded-lg p-2.5 bg-white outline-none focus:ring-2 focus:ring-teal-500 text-sm shadow-sm">
+                            <input type="text" id="p3-staff-input" placeholder="พิมพ์เพื่อค้นหา/เลือกผู้ส่งเงิน..." onclick="toggleP3StaffDropdown()" onkeyup="filterP3Staffs(this)" autocomplete="off" class="w-full border border-slate-300 rounded-lg p-2.5 bg-white outline-none focus:ring-2 focus:ring-teal-500 text-sm shadow-sm">
                             <div id="p3-staff-options" class="hidden absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-xl z-50 max-h-48 overflow-y-auto">
                                 <div id="p3-staff-options-list">
                                     <!-- JS will populate -->
@@ -1780,7 +1806,7 @@
                         <!-- เลือกจุดให้บริการ (ดึงจาก คอลัมน์ A) -->
                         <div class="relative p3-point-dropdown-container">
                             <label class="block text-slate-600 font-semibold mb-1.5 text-sm">จุดให้บริการ</label>
-                            <input type="text" id="p3-point-input" readonly placeholder="พิมพ์เพื่อค้นหา/เลือกจุดบริการ..." onclick="toggleP3PointDropdown()" onkeyup="filterP3Points(this)" autocomplete="off" class="w-full border border-slate-300 rounded-lg p-2.5 bg-white outline-none focus:ring-2 focus:ring-teal-500 text-sm shadow-sm">
+                            <input type="text" id="p3-point-input" placeholder="พิมพ์เพื่อค้นหา/เลือกจุดบริการ..." onclick="toggleP3PointDropdown()" onkeyup="filterP3Points(this)" autocomplete="off" class="w-full border border-slate-300 rounded-lg p-2.5 bg-white outline-none focus:ring-2 focus:ring-teal-500 text-sm shadow-sm">
                             <div id="p3-point-options" class="hidden absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-xl z-50 max-h-48 overflow-y-auto">
                                 <div id="p3-point-options-list">
                                     <!-- JS will populate -->
@@ -1871,7 +1897,7 @@
             </div>
         </div>
 
-        <!-- -->
+        <!-- Print Container (Hidden from Screen, Visible on Print) -->
         <div id="printArea" class="hidden">
             <!-- ข้อมูลสำหรับการพิมพ์ PDF แยกหน้าและการส่งออก Excel (จะถูกอัดโค้ดเข้ามาจาก JS แบบไดนามิก) -->
         </div>
