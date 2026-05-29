@@ -820,8 +820,9 @@
 
         // สร้างโครงสร้างหน้ากระดาษพิมพ์แบบไดนามิกแยกหน้า และสร้างตารางซ่อนสำหรับดาวน์โหลด Excel
         function generatePrintAreaHTML(printRows, selDate, currentServicePoint, selShift, selStaff, selPosition, totalCash, totalQR, grandTotal, showShift = true) {
-            const cellStyle = "border: 1px solid #94a3b8; padding: 10px; font-size: 10pt;";
-            const headerStyle = "border: 1px solid #94a3b8; text-align:center; padding:10px; font-weight: bold;";
+            // ส่วนที่แก้ไข: ปรับ padding ให้เล็กลง (4px 6px) และลด font-size ลงเหลือ 9pt
+            const cellStyle = "border: 1px solid #94a3b8; padding: 4px 6px; font-size: 9pt;";
+            const headerStyle = "border: 1px solid #94a3b8; text-align:center; padding: 5px; font-weight: bold; font-size: 9pt;";
             
             // กำหนดจำนวนแถวสูงสุดในแต่ละหน้าคงที่ เพราะทุกหน้าตอนนี้จะมีทั้งส่วนหัวและส่วนท้ายพร้อมลายเซ็นที่ขนาดเท่ากัน
             const ROWS_PER_PAGE = 7;
